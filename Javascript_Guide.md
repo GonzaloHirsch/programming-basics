@@ -100,6 +100,7 @@ Cada objeto tiene un prototipo al que delega.
 Este protipo, si no especificado con *Object.setPrototypeOf*, es como el Object global del que todos delegan.
 
 **\_\_proto\_\_**: Devuelve el prototipo al que están delegando
+
 **prototype**: Devuelve el prototipo que tiene
 
 **Nota**: **Todos** los objetos tienen un prototipo que delegan, entonces siempre va a devolver algo \_\_proto\_\_, mientras que las funciones solo tienen prototype a menos que se use *Object.setPrototypeOf* o un *new*.
@@ -133,6 +134,8 @@ const obj_instance = Object.create(obj).init(param)
 
 ## Class
 **Usar esta forma para crear clases**
+
+**No existen las clases en si, es una implementación del modelo de herencia de prototipos**
 
 Existe la keyword *class*, y se usa de la siguiente forma.
 
@@ -177,7 +180,3 @@ class Child extends Parent{
 ```
 
 **Nota**: Se usa *super* para llamar al constructor de la clase de la que uno hereda.
-
-## Asignación de Variables
-
-Se puede asignar una funci
