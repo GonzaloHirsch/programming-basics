@@ -503,10 +503,173 @@ func main() {
 
 Functions can be closures, it means it can reference variables outside its body and be bound by that value
 
+# Methods
+
+Go does not have classes
+
+Methods can be defined, and have a `receiver` which is the object that receives the call to the methods
+
+You need an instance of the receiver to be able to call the method
+
+
+Methods are functions with receiver arguments
+
+## Receivers
+
+Many objects can be receivers:
+ - Structs
+```
+type Point struct {
+    x, y float64
+}
+
+// Here Abs() is a method that has a Point as a receiver
+func (p Point) Abs() float64 {
+    return math.Sqrt(p.x*p.x + p.y*p.y)
+}
+
+func main(){
+    myPoint := Point{1,2}
+    fmt.Println(myPoint.Abs())
+}
+```
+ - Non-struct types
+```
+type MyFloat float64
+
+func (mf MyFloat) Abs() float64 {
+    if mf < 0 {
+        return float64(-mf)
+    }
+    return float64(mf)
+}
+
+func main(){
+    mf := MyFloat{1.432}
+    fmt.Println(mf.Abs())
+}
+```
+ - Pointers
+```
+type Point struct {
+    x, y float64
+}
+
+// Here Abs() is a method that has a Point as a receiver
+func (p *Point) Abs() float64 {
+    return math.Sqrt(p.x*p.x + p.y*p.y)
+}
+
+func main(){
+    myPoint := Point{1,2}
+    fmt.Println(myPoint.Abs())
+}
+```
+
+If the receiver is not a pointer, values held by the receiver cannot be modified because the program is working with a copy. Pointers need to be used if the values contained in the receiver want to be changed
+
+## Interfaces
+
+Interfaces are defined as a set of method signatures
+```
+type Abser interface {
+    Abs() float64
+}
+```
+
+A value of the interface type can hold any object that implements the interface
+
+They are **implicitly** implemented, there is no way to declare that a receiver implements an interface
+
+The receiver can be `nil` when calling the function interface, but this does not generate a null pointer exception
+```
+func (t *T) M() {
+	if t == nil {
+		fmt.Println("<nil>")
+		return
+	}
+	fmt.Println(t.S)
+}
+```
+
+### Empty Interfaces
+
+Empty interfaces can hold values of any type
+```
+func main(){
+    var i interface{}
+    i = 42
+    i = "hello"
+}
+```
+Useful when the type is not known
+
+## Type Assertions
+
+The type of a variable can be asserted in this way (`T` is the type being asserted)
+```
+t := i.(T)
+```
+
+If the variable `i` is not of type `T`, it will panic
+
+There is an alternate way, in order to assert this
+```
+t, ok := i.(T)
+```
+Where `ok` will be `true` if it is of type `T` or `false` otherwise, and `t` will have the value of `i` or the zero value otherwise
+
+### Type Switches
+
+The value of a type assertion can be used in switches in this way
+```
+func do(i interface{}) {
+	switch v := i.(type) {
+	case int:
+		fmt.Printf("Twice %v is %v\n", v, v*2)
+	case string:
+		fmt.Printf("%q is %v bytes long\n", v, len(v))
+	default:
+		fmt.Printf("I don't know about type %T!\n", v)
+	}
+}
+
+func main() {
+	do(21)
+	do("hello")
+	do(true)
+}
+```
+Note the `v := i.(type)`
+
+## Errors
+
+Functions return error values along with the returned values, if there is an error, it will return something different than `nil` in the error variable
+```
+i, err := strconv.Atoi("42")
+if err != nil {
+    fmt.Printf("couldn't convert number: %v\n", err)
+    return
+}
+fmt.Println("Converted integer:", i)
+```
+
+## Readers
+
+The IO package contains `readers`, which are the read end of streams of data
+
+All readers contain a method called `Read`
+```
+func (T) Read(b []byte) (n int, err error)
+```
+Where `n` is the amount of bytes read and `err` is the return value of the operation
+
+If there is no more data to read, it will return `io.EOF` in `err`
+
 # Go Tour Exercise Solutions
 
-## Exercise 1 - "Exercise: Slices"
-[Problem URL](https://https://tour.golang.org/moretypes/18)
+## Exercise: Slices
+[Problem URL](https://tour.golang.org/moretypes/18)
 
 Problem:
 
@@ -545,8 +708,8 @@ func main() {
 }
 ```
 
-## Exercise 2 - "Exercise: Maps"
-[Problem URL](https://https://tour.golang.org/moretypes/23)
+## Exercise: Maps
+[Problem URL](https://tour.golang.org/moretypes/23)
 
 Problem:
 
@@ -578,8 +741,8 @@ func main() {
 }
 ```
 
-## Exercise 3 - "Exercise: Fibonacci closure"
-[Problem URL](https://https://tour.golang.org/moretypes/26)
+## Exercise: Fibonacci closure
+[Problem URL](https://tour.golang.org/moretypes/26)
 
 Problem:
 
@@ -609,5 +772,171 @@ func main() {
 	for i := 0; i < 10; i++ {
 		fmt.Println(f())
 	}
+}
+```
+
+## Exercise: Stringers
+[Problem URL](https://tour.golang.org/methods/18)
+
+Problem:
+
+Make the IPAddr type implement fmt.Stringer to print the address as a dotted quad.
+
+For instance, IPAddr{1, 2, 3, 4} should print as "1.2.3.4".
+
+Solution:
+```
+package main
+
+import "fmt"
+
+type IPAddr [4]byte
+
+// TODO: Add a "String() string" method to IPAddr.
+
+func (ip IPAddr) String() string {
+	return fmt.Sprintf("%v.%v.%v.%v", ip[0], ip[1], ip[2], ip[3])
+}
+
+func main() {
+	hosts := map[string]IPAddr{
+		"loopback":  {127, 0, 0, 1},
+		"googleDNS": {8, 8, 8, 8},
+	}
+	for name, ip := range hosts {
+		fmt.Printf("%v: %v\n", name, ip)
+	}
+}
+```
+
+## Exercise: Readers
+[Problem URL](https://tour.golang.org/methods/22)
+
+Problem:
+
+Implement a Reader type that emits an infinite stream of the ASCII character 'A'.
+
+Solution:
+```
+package main
+
+import "golang.org/x/tour/reader"
+
+type MyReader struct{}
+
+// TODO: Add a Read([]byte) (int, error) method to MyReader.
+
+func (reader MyReader) Read(s []byte) (int, error){
+	s = s[:cap(s)]
+	for i := range s {
+		s[i] = 'A'
+	}
+	return cap(s), nil
+}
+
+func main() {
+	reader.Validate(MyReader{})
+}
+```
+
+## Exercise: rot13Reader
+[Problem URL](https://tour.golang.org/methods/23)
+
+Problem:
+
+A common pattern is an io.Reader that wraps another io.Reader, modifying the stream in some way.
+
+For example, the gzip.NewReader function takes an io.Reader (a stream of compressed data) and returns a *gzip.Reader that also implements io.Reader (a stream of the decompressed data).
+
+Implement a rot13Reader that implements io.Reader and reads from an io.Reader, modifying the stream by applying the rot13 substitution cipher to all alphabetical characters.
+
+The rot13Reader type is provided for you. Make it an io.Reader by implementing its Read method.
+
+Solution:
+```
+package main
+
+import (
+    "io"
+    "os"
+    "strings"
+)
+
+type rot13Reader struct {
+    r io.Reader
+}
+
+func rot13byte(sb byte) byte {
+    s := rune(sb)
+    if s >= 'a' && s <= 'm' || s >= 'A' && s <= 'M' {
+        sb += 13
+    }
+    if s >= 'n' && s <= 'z' || s >= 'N' && s <= 'Z' {
+        sb -= 13
+    }
+
+    return sb
+}
+func (rot13 rot13Reader) Read(data []byte) (readed int, err error) {
+    readed, err = rot13.r.Read(data)
+    for i := 0; i < readed; i++ {
+        data[i] = rot13byte(data[i])
+    }
+
+    return
+}
+
+func main() {
+    s := strings.NewReader("Lbh penpxrq gur pbqr!")
+    r := rot13Reader{s}
+    io.Copy(os.Stdout, &r)
+}
+```
+
+## Exercise: Images
+[Problem URL](https://tour.golang.org/methods/25)
+
+Problem:
+
+Remember the picture generator you wrote earlier? Let's write another one, but this time it will return an implementation of image.Image instead of a slice of data.
+
+Define your own Image type, implement the necessary methods, and call pic.ShowImage.
+
+Bounds should return a image.Rectangle, like image.Rect(0, 0, w, h).
+
+ColorModel should return color.RGBAModel.
+
+At should return a color; the value v in the last picture generator corresponds to color.RGBA{v, v, 255, 255} in this one.
+
+Solution:
+```
+package main
+
+import (
+	"golang.org/x/tour/pic"
+	"image"
+	"image/color"
+)
+
+type Image struct {
+	rows, cols int
+}
+
+func (m *Image) Bounds() image.Rectangle {
+	return image.Rect(0, 0, m.rows, m.cols)
+}
+
+func (m *Image) ColorModel() color.Model {
+	return color.RGBAModel
+}
+
+func (m *Image) At(x, y int) color.Color {
+	v := uint8(x ^ y)
+	return color.RGBA{v, v, 255, 255}
+}
+
+func main() {
+	m := Image{64, 64}
+	pic.ShowImage(&m)
 }
 ```
