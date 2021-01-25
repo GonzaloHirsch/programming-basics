@@ -4,7 +4,7 @@ This is a summary of the book "Effective Java, Second Edition" by Joshua Bloch.
 It will have each item in the book, summarized as well as possible.
 
 ## Index
-These are all the items present in the summary(chapter 1 is an introduction):
+These are all the items present in the summary (chapter 1 is an introduction):
  * [Chapter 2 - Creating and Destroying Objects](#Chapter-2---Creating-and-Destroying-Objects)
    - [Item 1 - Consider static factory methods instead of constructors](#Item-1---Consider-static-factory-methods-instead-of-constructors)
    - [Item 2 - Consider a builder when faced with many constructor parameters](#Item-2---Consider-a-builder-when-faced-with-many-constructor-parameters)
@@ -13,6 +13,13 @@ These are all the items present in the summary(chapter 1 is an introduction):
    - [Item 5 - Avoid creating unnecessary objects](#Item-5---Avoid-creating-unnecessary-objects)
    - [Item 6 - Eliminate obsolete object references](#Item-6---Eliminate-obsolete-object-references)
    - [Item 7 - Avoid finalizers](#Item-7---Avoid-finalizers)
+  * [Chapter 3 - Methods Common to All Objects](#Chapter-3---Methods-Common-to-All-Objects)
+    - [Item 8 - Obey the general contract when overriding equals](#Item-8---Obey-the-general-contract-when-overriding-equals)
+    - [Item 9 - Always override hashCode when you override equals](#Item-9---Always-override-hashCode-when-you-override-equals)
+    - [Item 10 - Always override toString](#Item-10---Always-override-toString)
+    - [Item 11 - Override clone judiciously](#Item-11---Override-clone-judiciously)
+    - [Item 12 - Consider implementing Comparable](#Item-12---Consider-implementing-Comparable)
+  * [Chapter 4 - Classes and Interfaces](#Chapter-4---Classes-and-Interfaces)
 
 # Chapter 2 - Creating and Destroying Objects
 
@@ -311,3 +318,150 @@ public class Foo {
     ... // Remainder omitted
 }
 ```
+
+# Chapter 3 - Methods Common to All Objects
+
+## Item 8 - Obey the general contract when overriding equals
+
+There is no need to override the `equals` method if:
+ - Each instance of the class is inherently unique, such as *Threads*, which are active entities insead of values
+ - You don't care for the class to provide an equality test
+ - A superclass has already overriden the method and the implementation fits your class
+ - The class is package-private/private and you are sure the method will never be used
+
+If the class is a *value class*(class that represents a value), it's fine to override the `equals`. It enables instances to serve as map keys or set elements with predictable behaviour.
+
+For overriding the `equals`, the implementation must implemente an *equivalence relationship`:
+ - *Reflexive* -> If `x` is not null, `x.equals(x)` is always true
+ - *Symmetric* -> If `x` and `y` not null, `x.equals(y) == true` <=> `y.equals(x) == true`
+ - *Transitive* -> If `x`, `y` and `z` not null, if `x.equals(y) == true && y.equals(z) == true` => `x.equals(z) == true` 
+ - *Consistent* -> If `x` and `y` not null, all subsecuent calls will return the same value
+ - If `x`is not null, `x.equals(null) == false`
+
+There is no way to extend an instantiable class and add a value component while preserving the `equals` contract. To solve this there is a workaround by using the [Item 16](#) by favoring composition instead of inheritance.
+
+The *Liskov substitution principle* states that any important property of a type should also hold for it's subtypes so that any method written on the type will work on the subtype.
+
+The recipe for a correct override is:
+ 1. Use the `==` to check if the argument is a reference to the object
+ 2. Use `instaceOf` to check if the type is correct
+ 3. Cast the argument to the correct type
+ 4. For reach significant field, check if the fields match in the argument and the instance itself
+     - If the field is `float` or `double` -> Use `Float.compare` or `Double.compare` respectively due to the definition of some constants
+     - If the field is another primitive different to the previous -> Use `==`to check equality
+     - If the field is an object -> User `equals` to compare
+ 5. After the method is implemented, ask yourself if it follows the rules stated previously
+
+## Item 9 - Always override hashCode when you override equals
+
+The `hashcode` method **must** be overriden in every class that overrides the `equals` method. If this is not done, the object will not work correctly in hash-based collections.
+
+The contract for `hashcode` is as follows:
+ 1. As many times invoked for the same object, the hashcode must be the same.
+ 2. If 2 objects are the same according to the `equals` method, the `hashcode` method must return the same number.
+ 3. If 2 objects are the different according to the `equals` method, the `hashcode` method must return different numbers.
+
+Equal objects **must** return the same hashcode.
+
+The recipe for a correct override is:
+ 1. Store a constant, non-zero, prime integer in a variable `result`.
+ 2. For each significant field, `f`, in the object (fields used in equals method) compute a `c` value:
+    - For `boolean` -> `f ? 1 : 0`
+    - For `byte`, `char`, `short`, `int` -> `(int) f`
+    - For `long` -> `(int)(f^(f>>>32))`
+    - For `float` -> `Float.floatToIntBits(f)`
+    - For `Object` -> Call `hashcode` method over object or `0` if the object is null
+    - For `Array` -> Apply the rules to each element
+ 3. Combine the `c` value as follows -> `result = 31 * result + c`
+ 4. Test the method
+
+An interesting optimization is to cache the value of the hashcode method, mainly if the object is expected to be used as a hash key. In case the object is heavy, this is a good practice. For example:
+```
+// Lazily initialized, cached hashCode
+private volatile int hashCode;  // (See Item 71)
+
+@Override 
+public int hashCode() {
+    int result = hashCode;
+    if (result == 0) {
+        result = 17;
+        result = 31 * result + areaCode;
+        result = 31 * result + prefix;
+        result = 31 * result + lineNumber;
+        hashCode = result;
+    }
+    return result;
+}
+```
+ 
+## Item 10 - Always override toString
+
+A general `toString` implementation should be "a concise but informative representation that is easy for a person to read”. Provinding a good `toString` implementation makes the class more pleasant to use.
+
+It is a good practice to document the format of the `toString` for others to be able to work with it. Intentions should be documented. 
+
+As a programmer, you should provide programatic access to all the information contained in the `toString` value.
+
+## Item 11 - Override clone judiciously
+
+The `clone` method creates a copy of an object without calling a constructor.
+
+If you override the clone method in a nonfinal class, you should return an object obtained by invoking super.clone.
+
+In practice, a class that implements Cloneable is expected to provide a properly functioning public clone method.
+
+A possible implementation is to implemente the `Clonable` interface and in turn call the `Object.clone` method like this:
+```
+@Override 
+public PhoneNumber clone() {
+    try {
+        return (PhoneNumber) super.clone(); } 
+    catch(CloneNotSupportedException e) {
+        throw new AssertionError();  // Can't happen
+    }
+}
+```
+The idea is to never make the client do anything the library can do for the client, this is followed by casting the `super.clone` result to avoid having the client to cast it itself.
+
+In case a class contains inner structures, it is necessary for the clone object to avoid harming the original object contents and avoid pointer relationships with the original object. For example:
+```
+@Override 
+public Stack clone() {
+    try {
+        Stack result = (Stack) super.clone(); 
+        result.elements = elements.clone(); 
+        return result;
+    } catch (CloneNotSupportedException e) {
+        throw new AssertionError();
+    } 
+}
+```
+
+In the previous case, this implementation would not work if the `elements` property is final.
+
+A better approach is to implement a *copy factory* or a *copy constructor*
+
+## Item 12 - Consider implementing Comparable
+
+The `compareTo` is a method defined in the `Comparable` interface, it permits order and equality comparisons. 
+
+Implementing the `Comparable` interface indicates the objects have a *natural ordering*. It also allows you to interoperate with collections with a minimal effort.
+
+The contract for the `compareTo` method is as follows:
+```
+Compares this object with the specified object for order. Returns a negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified object. Throws ClassCastException if the specified object’s type prevents it from being compared to this object.
+```
+
+Things the implementation should take care of (*sgn* is the mathematical sign function, it returns -1, 0 or 1):
+ 1. `sgn(x.compareTo(y)) == -sgn(y.compareTo(x))` for all `x` and `y`.
+ 2. Relation must be transitive --> `(x.compareTo(y) > 0 && y.compareTo(z) > 0)` implies `x.compareTo(z) > 0`
+ 3. `x.compareTo(y) == 0` implies that `sgn(x.compareTo(z)) == sgn(y.compareTo(z))`, for all `z`.
+ 4. It is also recommended that `(x.compareTo(y) == 0) == (x.equals(y))`
+
+Being that the `Comparable` interface is parametrized, there is no need to perform type checks like the ones in the `equals` method, but if the argument is null, the invocation should throw a `NullPointerException`, and it will, as soon as the method attempts to access its members.
+
+Compare integral primitive fields using the relational operators < and >. For floating-point fields, use `Double.compare` or `Float.compare` in place of the relational operators, which do not obey the general contract for compareTo when applied to floating point values. For array fields, apply these guidelines to each element.
+
+If a class has multiple significant fields, the order in which you compare them is critical. You must start with the most significant field and work your way down.
+
+# Chapter 4 - Classes and Interfaces
