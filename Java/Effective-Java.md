@@ -5,27 +5,33 @@ It will have each item in the book, summarized as well as possible.
 
 ## Index
 These are all the items present in the summary (chapter 1 is an introduction):
- * [Chapter 2 - Creating and Destroying Objects](#Chapter-2---Creating-and-Destroying-Objects)
-   - [Item 1 - Consider static factory methods instead of constructors](#Item-1---Consider-static-factory-methods-instead-of-constructors)
-   - [Item 2 - Consider a builder when faced with many constructor parameters](#Item-2---Consider-a-builder-when-faced-with-many-constructor-parameters)
-   - [Item 3 - Enforce the singleton property with a private constructor or an enum type](#Item-3---Enforce-the-singleton-property-with-a-private-constructor-or-an-enum-type)
-   - [Item 4 - Enforce noninstantiability with a private constructor](#Item-4---Enforce-noninstantiability-with-a-private-constructor)
-   - [Item 5 - Avoid creating unnecessary objects](#Item-5---Avoid-creating-unnecessary-objects)
-   - [Item 6 - Eliminate obsolete object references](#Item-6---Eliminate-obsolete-object-references)
-   - [Item 7 - Avoid finalizers](#Item-7---Avoid-finalizers)
-  * [Chapter 3 - Methods Common to All Objects](#Chapter-3---Methods-Common-to-All-Objects)
-    - [Item 8 - Obey the general contract when overriding equals](#Item-8---Obey-the-general-contract-when-overriding-equals)
-    - [Item 9 - Always override hashCode when you override equals](#Item-9---Always-override-hashCode-when-you-override-equals)
-    - [Item 10 - Always override toString](#Item-10---Always-override-toString)
-    - [Item 11 - Override clone judiciously](#Item-11---Override-clone-judiciously)
-    - [Item 12 - Consider implementing Comparable](#Item-12---Consider-implementing-Comparable)
-  * [Chapter 4 - Classes and Interfaces](#Chapter-4---Classes-and-Interfaces)
-    - [Item 13 - Minimize the accessibility of classes and members](#Item-13---Minimize-the-accessibility-of-classes-and-members)
-    - [Item 14 - In public classes, use accessor methods, not public fields](#Item-14---In-public-classes,-use-accessor-methods,-not-public-fields)
+ * [Chapter 2 - Creating and Destroying Objects](#chapter-2---creating-and-destroying-objects)
+   - [Item 1 - Consider static factory methods instead of constructors](#item-1---consider-static-factory-methods-instead-of-constructors)
+   - [Item 2 - Consider a builder when faced with many constructor parameters](#item-2---consider-a-builder-when-faced-with-many-constructor-parameters)
+   - [Item 3 - Enforce the singleton property with a private constructor or an enum type](#item-3---enforce-the-singleton-property-with-a-private-constructor-or-an-enum-type)
+   - [Item 4 - Enforce noninstantiability with a private constructor](#item-4---enforce-noninstantiability-with-a-private-constructor)
+   - [Item 5 - Avoid creating unnecessary objects](#item-5---avoid-creating-unnecessary-objects)
+   - [Item 6 - Eliminate obsolete object references](#item-6---eliminate-obsolete-object-references)
+   - [Item 7 - Avoid finalizers](#item-7---avoid-finalizers)
+  * [Chapter 3 - Methods Common to All Objects](#chapter-3---methods-common-to-all-objects)
+    - [Item 8 - Obey the general contract when overriding equals](#item-8---obey-the-general-contract-when-overriding-equals)
+    - [Item 9 - Always override hashCode when you override equals](#item-9---always-override-hashCode-when-you-override-equals)
+    - [Item 10 - Always override toString](#item-10---always-override-toString)
+    - [Item 11 - Override clone judiciously](#item-11---override-clone-judiciously)
+    - [Item 12 - Consider implementing Comparable](#item-12---consider-implementing-comparable)
+  * [Chapter 4 - Classes and Interfaces](#chapter-4---classes-and-interfaces)
+    - [Item 13 - Minimize the accessibility of classes and members](#item-13---minimize-the-accessibility-of-classes-and-members)
+    - [Item 14 - In public classes, use accessor methods, not public fields](#item-14---in-public-classes,-use-accessor-methods,-not-public-fields)
+    - [Item 15 - Minimize mutability](#item-15---minimize-mutability)
+    - [Item 16 - Favor composition over inheritance](#item-16---favor-composition-over-inheritance)
+    - [Item 17 - Design and document for inheritance or else prohibit it](#item-17---design-and-document-for-inheritance-or-else-prohibit-it)
+    - [Item 18 - Prefer interfaces to abstract classes](#item-18---prefer-interfaces-to-abstract-classes)
 
 # Chapter 2 - Creating and Destroying Objects
+[(Back)](#index)
 
 ## Item 1 - Consider static factory methods instead of constructors
+[(Back)](#index)
 
 **Advantage 1** -> Static factory methods give the programmer the advantage of naming the factory methods in order to obtain clearer code, avoid having to look into the documentation.
 
@@ -40,6 +46,7 @@ These are all the items present in the summary (chapter 1 is an introduction):
 **Disadvantage 2** -> Static factory methods not readily distinguishable from other static methods, cannot determine if it is a new instance easily. Some great common names are `valueOf`, `of`, `getInstance`, `newInstance`, `getType` and `newType`.
 
 ## Item 2 - Consider a builder when faced with many constructor parameters
+[(Back)](#index)
 
 Static factories and constructors do not scale well with optional parameters.
 
@@ -86,6 +93,7 @@ public interface Builder<T> {
 The method `newInstance` from the `Class` object has a lot of issues, so it shouldn't be used. It may attempt to invoke a constructor that may not exist, it propagates exceptions thrown by the constructor used and the client code has to be mindful of `InstantiationException` and `IllegalAccessException` at runtime. It breaks compile-time exception checking, using builder corrects this mistakes.
 
 ## Item 3 - Enforce the singleton property with a private constructor or an enum type
+[(Back)](#index)
 
 A *Singleton* is a class that can be instanced only once.
 
@@ -138,6 +146,7 @@ private Object readResolve() {
 ```
 
 ## Item 4 - Enforce noninstantiability with a private constructor
+[(Back)](#index)
 
 Utility classes are generally defined not to be instantiated, but when there is an absence of explicit constructors the compiler provides a *parameterless constructor*. To avoid this, the class can implement a **private constructor** such as this:
 ```
@@ -154,6 +163,7 @@ public class UtilityClass {
 This private constructor guarantees that the class won't be instantiated, and as a side effect, this class cannot be subclassed because it is required to implement a constructor from a super class.
 
 ## Item 5 - Avoid creating unnecessary objects
+[(Back)](#index)
 
 Reusing an object is faster and more stylish, an object can be reused if it is *inmutable*.
 
@@ -167,7 +177,7 @@ String s = "stringette";
 ```
 this case creates only 1 instance of the String, and in case it happens that the literal is used in another place, it will also be reused.
 
-Creation of unnecessary objects can generally be prevented by using a *static factory methods* ([Item 1](#Item-1---Consider-static-factory-methods-instead-of-constructors)) in preference to constructors on inmutable classes that provide both.
+Creation of unnecessary objects can generally be prevented by using a *static factory methods* ([Item 1](#item-1---consider-static-factory-methods-instead-of-constructors)) in preference to constructors on inmutable classes that provide both.
 
 Mutable objects can be reused in case it is known they won't be modified, for example, changing this:
 ```
@@ -213,6 +223,7 @@ Another way to create unnecessary objects is by *Autoboxing*, which allows the p
 Also, creating your own *object pool* is a bad idea unless the objects in the pool are extremely heavyweight, the modern JVM implementations have highly optimized object pools por lightweight objects.
 
 ## Item 6 - Eliminate obsolete object references
+[(Back)](#index)
 
 When using a language with a Garbage Collector such as Java, there is a common misconception that there is no need to take care of the memory management
 
@@ -271,6 +282,7 @@ Whenever a program *manages it's own memory*, the programmer should be alert for
 The best way to detect a memory leak is with a *heap profiler*.
 
 ## Item 7 - Avoid finalizers
+[(Back)](#index)
 
 Finalizers are often dangerous, unpredictable and generally unnecessary. 
 
@@ -322,8 +334,10 @@ public class Foo {
 ```
 
 # Chapter 3 - Methods Common to All Objects
+[(Back)](#index)
 
 ## Item 8 - Obey the general contract when overriding equals
+[(Back)](#index)
 
 There is no need to override the `equals` method if:
  - Each instance of the class is inherently unique, such as *Threads*, which are active entities insead of values
@@ -355,6 +369,7 @@ The recipe for a correct override is:
  5. After the method is implemented, ask yourself if it follows the rules stated previously
 
 ## Item 9 - Always override hashCode when you override equals
+[(Back)](#index)
 
 The `hashcode` method **must** be overriden in every class that overrides the `equals` method. If this is not done, the object will not work correctly in hash-based collections.
 
@@ -397,6 +412,7 @@ public int hashCode() {
 ```
  
 ## Item 10 - Always override toString
+[(Back)](#index)
 
 A general `toString` implementation should be "a concise but informative representation that is easy for a person to read”. Provinding a good `toString` implementation makes the class more pleasant to use.
 
@@ -405,6 +421,7 @@ It is a good practice to document the format of the `toString` for others to be 
 As a programmer, you should provide programatic access to all the information contained in the `toString` value.
 
 ## Item 11 - Override clone judiciously
+[(Back)](#index)
 
 The `clone` method creates a copy of an object without calling a constructor.
 
@@ -444,6 +461,7 @@ In the previous case, this implementation would not work if the `elements` prope
 A better approach is to implement a *copy factory* or a *copy constructor*
 
 ## Item 12 - Consider implementing Comparable
+[(Back)](#index)
 
 The `compareTo` is a method defined in the `Comparable` interface, it permits order and equality comparisons. 
 
@@ -467,8 +485,10 @@ Compare integral primitive fields using the relational operators < and >. For fl
 If a class has multiple significant fields, the order in which you compare them is critical. You must start with the most significant field and work your way down.
 
 # Chapter 4 - Classes and Interfaces
+[(Back)](#index)
 
 ## Item 13 - Minimize the accessibility of classes and members
+[(Back)](#index)
 
 The most important factor that determines if a module/API is well-designed is how well it hides it's implementation details. This is known as *encapsulation* or *information hiding*.
 
@@ -489,5 +509,55 @@ There is 1 rule that restricts your ability to reduce access, if a method overri
 *Instance fields or static fields should never be public* (not counting constants), and violating this, makes your implmentation not thread-safe.
 
 ## Item 14 - In public classes, use accessor methods, not public fields
+[(Back)](#index)
 
 In order to enforce *encapsulation*, you shoud make sure to *provide accessor methods if a class is accessible outside it's package*. However, if a class is package-private or private nested, there is nothing wrong with exposing it's methods.
+
+## Item 15 - Minimize mutability
+[(Back)](#index)
+
+An *immutable class* is a class whose instances cannot be modified. They are easier to design, implement and use than mutable classes.
+
+To make a class immutable follow these principles:
+ 1. Don't provide methods that mutate the object's state
+ 2. Ensure the class cannot be extended. One alternative is to make the class `final`
+ 3. Make fields final
+ 4. Make al fields private, prevent access to mutable objects
+ 5. Ensure exclusive access to mutable components, make sure clients cannot obtain instances of the inner mutable objects
+
+Immutable objects are inherently thread-safe, as they cannot be modified, they don't need synchronization.
+
+The real disadvantange of immutable objects is that they require a new instance for each sepparate value, meaning that creating a new instance of a big object is going to be costly.
+
+How to implement an immutable object:
+ - Private constructors with *static factories*
+ - Lazy initialization of values the first time they are used, then they can be cached
+
+A big thing to take away is that you should make the fields final unless you don't need to.
+
+## Item 16 - Favor composition over inheritance
+[(Back)](#index)
+
+**Inheritance**, even though it is great to achieve code reuse, may be not the best tool for the job. Inheritance violates the principle of encapsulation, the new class depends on the implementation details of the superclass. If the superclass implementation changes, it can break the inherited class.
+
+**Composition** is used to solve many of the issues generated by inheritance. It is based on internally using the class to be extended, for it to become a component of the new class.
+
+Inheritance is appropiate when class B is a subtype of class A, you should be able to answer confidently the question "Is every B really an A?"
+
+## Item 17 - Design and document for inheritance or else prohibit it
+[(Back)](#index)
+
+A class should document the *self-use* of overridable methods in order for the programmer to know the effects of overriding any method.
+
+Designing for inheritance involves explaining the internal workings of the overridable methods and other methods that involve calling those overridable methods.
+
+The only way to test a class designed for inheritance is by writing subclasses.
+
+Constructors must not invoke overridable methods, it will generate failures and unexpected behaviours.
+
+Designing for inheritance introduces substancial limitations to the classes. The best solution for a neither final nor designed/documented for subclassing, is to prohibit their subclassing. For this, there are 2 alternatives:
+ 1. Make the class final
+ 2. Make the constructors private and use static factories
+
+## Item 18 - Prefer interfaces to abstract classes
+[(Back)](#index)
