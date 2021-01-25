@@ -12,4 +12,4 @@ Here are the available topics:
 
 ### Support or Contact
 
-Having trouble the website, want to make a suggestion, or point out an error? Send me an [email](hirschgonzalo@gmail.com)
+Having trouble the website, want to make a suggestion, or point out an error? Send me an email @ <hirschgonzalo@gmail.com>
