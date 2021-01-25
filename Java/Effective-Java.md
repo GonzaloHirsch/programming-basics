@@ -20,6 +20,8 @@ These are all the items present in the summary (chapter 1 is an introduction):
     - [Item 11 - Override clone judiciously](#Item-11---Override-clone-judiciously)
     - [Item 12 - Consider implementing Comparable](#Item-12---Consider-implementing-Comparable)
   * [Chapter 4 - Classes and Interfaces](#Chapter-4---Classes-and-Interfaces)
+    - [Item 13 - Minimize the accessibility of classes and members](#Item-13---Minimize-the-accessibility-of-classes-and-members)
+    - [Item 14 - In public classes, use accessor methods, not public fields](#Item-14---In-public-classes,-use-accessor-methods,-not-public-fields)
 
 # Chapter 2 - Creating and Destroying Objects
 
@@ -465,3 +467,27 @@ Compare integral primitive fields using the relational operators < and >. For fl
 If a class has multiple significant fields, the order in which you compare them is critical. You must start with the most significant field and work your way down.
 
 # Chapter 4 - Classes and Interfaces
+
+## Item 13 - Minimize the accessibility of classes and members
+
+The most important factor that determines if a module/API is well-designed is how well it hides it's implementation details. This is known as *encapsulation* or *information hiding*.
+
+Even though *encapsulation* might not cause good performance, it enables good performance tunning and speeds up the development process.
+
+If a top-level class/interface can be made *package-private*, it should be. By being *package-private*, it allows you to modify, replace or delete it without harming the clients, because it is part of the implementation.
+
+If a top-level *package-private* class/inteface is being used by only 1 class, consider making it a private nested class of that only class that uses it.
+
+The 4 levels of accessiblity, in increasing order are:
+ - **private** --> Only accessible from where it was declared
+ - **package-private** --> Only accessible from inside the package it was declared in
+ - **protected** --> Only accessible by subclasses of the class it was declared in
+ - **public** --> Accessible from anywhere
+
+There is 1 rule that restricts your ability to reduce access, if a method overrides a superclass method, it cannot have a lower access level than the original method.
+
+*Instance fields or static fields should never be public* (not counting constants), and violating this, makes your implmentation not thread-safe.
+
+## Item 14 - In public classes, use accessor methods, not public fields
+
+In order to enforce *encapsulation*, you shoud make sure to *provide accessor methods if a class is accessible outside it's package*. However, if a class is package-private or private nested, there is nothing wrong with exposing it's methods.
