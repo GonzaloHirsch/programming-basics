@@ -4,6 +4,8 @@ You can use the [editor on GitHub](https://github.com/GonzaloHirsch/Programming_
 
 Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
 
+[GO TO EFFECTIVE JAVA](Java/Effective-Java.md) and ![Image](src)
+
 ### Markdown
 
 Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
