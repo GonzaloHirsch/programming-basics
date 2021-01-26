@@ -26,6 +26,11 @@ These are all the items present in the summary (chapter 1 is an introduction):
     - [Item 16 - Favor composition over inheritance](#item-16---favor-composition-over-inheritance)
     - [Item 17 - Design and document for inheritance or else prohibit it](#item-17---design-and-document-for-inheritance-or-else-prohibit-it)
     - [Item 18 - Prefer interfaces to abstract classes](#item-18---prefer-interfaces-to-abstract-classes)
+    - [Item 18 - Prefer interfaces to abstract classes](#item-18---prefer-interfaces-to-abstract-classes)
+    - [Item 19 - Use interfaces only to define types](#item-19---use-interfaces-only-to-define-types)
+    - [Item 20 - Prefer class hierarchies to tagged classes](#item-20---prefer-class-hierarchies-to-tagged-classes)
+    - [Item 21 - Use function objects to represent strategies](#item-21---use-function-objects-to-represent-strategies)
+    - [Item 22 - Favor static member classes over nonstatic](#item-22---favor-static-member-classes-over-nonstatic)
 
 # Chapter 2 - Creating and Destroying Objects
 [(Back)](#index)
@@ -569,3 +574,129 @@ Interfaces are a good way of defining mixins, which are optional behaviours.
 You can combine **interfaces** and **abstract classes** to create *skeletal implementations*, known as **Abstract***Interface*. The interface defines the type, and the abstract class takes up most of the work of implementing it. Here, *Interface* is the name of the interface, being so that for example, the names are *AbstractSet* and *AbstractMap*. These implementations are designed for inheritance, so previous items should be taken into account.
 
 Abstract classes are far easier to extend, you cannot modify an interface without breaking all it's clients.
+
+## Item 19 - Use interfaces only to define types
+[(Back)](#index)
+
+When a class implements an interface, the interface serves as the *type* that can be used to refer to the instances of the class.
+
+*Constant Interfaces* are interfaces that don't follow the previous, they only contain constants, no methods. **This is a poor use of interfaces.** Interfaces should be used to define types, not constants.
+
+If constants need to be exported, a utility class can be used such as this:
+```
+// Constant utility class
+package com.effectivejava.science;
+
+public class PhysicalConstants {
+    private PhysicalConstants() { }  // Prevents instantiation
+
+    public static final double AVOGADROS_NUMBER = 6.02214199e23; 
+    public static final double BOLTZMANN_CONSTANT = 1.3806503e-23; 
+    public static final double ELECTRON_MASS = 9.10938188e-31;
+}
+```
+
+Combined with a static import to avoid the qualifying class:
+```
+import static com.effectivejava.science.PhysicalConstants.*;
+```
+
+## Item 20 - Prefer class hierarchies to tagged classes
+[(Back)](#index)
+
+*Tagged classes* are classes that containt a *tag* indicating the flavour of the instance, they are **verbose, error-prone and inefficient**, such as this:
+```
+// Tagged class - vastly inferior to a class hierarchy!
+class Figure {
+    enum Shape { RECTANGLE, CIRCLE };
+
+    // Tag field - the shape of this figure 
+    final Shape shape;
+
+    // These fields are used only if shape is RECTANGLE
+    double length;
+    double width;
+
+    // This field is used only if shape is CIRCLE
+    double radius;
+
+    // Constructor for circle
+    Figure(double radius) {
+        shape = Shape.CIRCLE;
+        this.radius = radius; }
+        
+    // Constructor for rectangle
+    Figure(double length, double width) {
+        shape = Shape.RECTANGLE; 
+        this.length = length; 
+        this.width = width;
+    }
+
+    double area() {
+        switch(shape) {
+            case RECTANGLE:
+                return length * width;
+            case CIRCLE:
+                return Math.PI * (radius * radius);
+            default:
+                throw new AssertionError();
+        }           
+    }
+}
+```
+
+This can be replaced with class hierarchy:
+```
+// Class hierarchy replacement for a tagged class
+abstract class Figure {
+    abstract double area();
+}
+
+class Circle extends Figure {
+    final double radius;
+    Circle(double radius) { 
+        this.radius = radius; 
+    }
+    double area() { 
+        return Math.PI * (radius * radius); 
+    }
+}
+
+class Rectangle extends Figure {
+    final double length;
+    final double width;
+    Rectangle(double length, double width) { 
+        this.length = length;
+        this.width = width;
+    }
+    double area() { 
+        return length * width; 
+    }
+}
+```
+
+## Item 21 - Use function objects to represent strategies
+[(Back)](#index)
+
+*Function Objects* are objects that have methods that performs an operation on some given other objects, for example:
+```
+// A reference to this StringLengthComparator is a Function Object to the compare method
+class StringLengthComparator implements Comparator<String> {
+    public int compare(String s1, String s2) {
+        return s1.length() - s2.length(); 
+    }
+}
+```
+
+Anonymous classes can be used as Function Objects, but they are inefficient, a new instance is created each time the code is executed, so it's better to use the Singleton pattern to avoid generating instances.
+
+## Item 22 - Favor static member classes over nonstatic
+[(Back)](#index)
+
+A *Nested Class* is a class defined inside another class. There are 4 types of nested classes, *static member classes*, *nonstatic member classes*, *anonymous classes*, and *local classes*. All but the first are known as *inner classes*.
+
+A *static member class* is a class defined inside an enclosing class, has the *static* modifier and has access to all the fields of the enclosing class.
+
+A *nonstatic member class* is very similar to a *static member class*, with the only difference that each instance of the nonstatic member is associated to an instance of the enclosing class.
+
+If you declare a member class that does not require access to the enclosing instance, make it *static*.
