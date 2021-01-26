@@ -561,3 +561,11 @@ Designing for inheritance introduces substancial limitations to the classes. The
 
 ## Item 18 - Prefer interfaces to abstract classes
 [(Back)](#index)
+
+Existing classes can be modified to implement a new interface, but cannot be modified to extend a new class.
+
+Interfaces are a good way of defining mixins, which are optional behaviours.
+
+You can combine **interfaces** and **abstract classes** to create *skeletal implementations*, known as **Abstract***Interface*. The interface defines the type, and the abstract class takes up most of the work of implementing it. Here, *Interface* is the name of the interface, being so that for example, the names are *AbstractSet* and *AbstractMap*. These implementations are designed for inheritance, so previous items should be taken into account.
+
+Abstract classes are far easier to extend, you cannot modify an interface without breaking all it's clients.
