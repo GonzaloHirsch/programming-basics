@@ -31,6 +31,8 @@ These are all the items present in the summary (chapter 1 is an introduction):
     - [Item 20 - Prefer class hierarchies to tagged classes](#item-20---prefer-class-hierarchies-to-tagged-classes)
     - [Item 21 - Use function objects to represent strategies](#item-21---use-function-objects-to-represent-strategies)
     - [Item 22 - Favor static member classes over nonstatic](#item-22---favor-static-member-classes-over-nonstatic)
+  * [Chapter 5 - Generics](#chapter-5---generics)
+    - [Item 23 - Do not use raw types in new code](#item-23---do-not-use-raw-types-in-new-code)
 
 # Chapter 2 - Creating and Destroying Objects
 [(Back)](#index)
@@ -62,7 +64,7 @@ The *JavaBeans pattern* allows for inconsistencies and requires for the programm
 The solution is the **Builder Pattern**, the client calls a constructor (or static factory) with all of the required parameters and gets a builder object. Then the client calls setter-like methods on the builder object to set each optional parameter of interest. Finally, the client calls a parame- terless build method to generate the object, which is immutable.
 
 The structure is the following:
-```
+```java
 public class MyClass {
     <parameters, required + optional>
     ...
@@ -88,7 +90,7 @@ public class MyClass {
 If the status of the given required variables is not correct, the `build()` method should throw `IllegalStateException`.
 
 The behaviour of the builder can be expressed with this interface:
-```
+```java
 // A builder for objects of type T
 public interface Builder<T> {
     public T build();
@@ -105,7 +107,7 @@ A *Singleton* is a class that can be instanced only once.
 There are 2 ways in which to implement the Singleton pattern, both based on private constructors and exporting a public static member in order to provide access to the instance. No public constructor guarantees that, if the pattern is implemented correctly, there will be only one instance.
 
 One implementation would be with a **public final field**:
-```
+```java
 // Singleton with public final field
 public class Elvis {
     public static final Elvis INSTANCE = new Elvis();
@@ -115,7 +117,7 @@ public class Elvis {
 ```
 
 Another possible implementation is with a **static factory**:
-```
+```java
 // Singleton with static factory
 public class Elvis {
     private static final Elvis INSTANCE = new Elvis(); 
@@ -126,7 +128,7 @@ public class Elvis {
 ```
 
 A third approach is by using an **enum type**:
-```
+```java
 // Enum singleton - the preferred approach
 public enum Elvis {
     INSTANCE;
@@ -141,7 +143,7 @@ The implementation with **static factory** has the advantage of giving the abili
 The implementation with the **enum type** has the advantage of being more concise, providing the mechanics for serialization for free and a guarantee against multiple implementations. **It is the best way to implement a *Singleton***
 
 To implement a *Singleton* class that implements the *Serializable* interface, the class must declare all instance fields `transient` and provide a `readResolve` method (item 77). Otherwise each time the object is deserialized, a new instance is created. An implementation of of this method would be:
-```
+```java
 // readResolve method to preserve singleton property
 private Object readResolve() {
     // Return the one true Elvis and let the garbage collector 
@@ -154,7 +156,7 @@ private Object readResolve() {
 [(Back)](#index)
 
 Utility classes are generally defined not to be instantiated, but when there is an absence of explicit constructors the compiler provides a *parameterless constructor*. To avoid this, the class can implement a **private constructor** such as this:
-```
+```java
 // Noninstantiable utility class
 public class UtilityClass {
     // Suppress default constructor for noninstantiability
@@ -173,11 +175,11 @@ This private constructor guarantees that the class won't be instantiated, and as
 Reusing an object is faster and more stylish, an object can be reused if it is *inmutable*.
 
 An example of what **NOT TO DO** is:
-```
+```java
 String s = new String("stringette"); // DON'T DO THIS!
 ``` 
 because it creates a new instance of String every time it is executed. Instead, this can be done:
-```
+```java
 String s = "stringette";
 ```
 this case creates only 1 instance of the String, and in case it happens that the literal is used in another place, it will also be reused.
@@ -185,7 +187,7 @@ this case creates only 1 instance of the String, and in case it happens that the
 Creation of unnecessary objects can generally be prevented by using a *static factory methods* ([Item 1](#item-1---consider-static-factory-methods-instead-of-constructors)) in preference to constructors on inmutable classes that provide both.
 
 Mutable objects can be reused in case it is known they won't be modified, for example, changing this:
-```
+```java
 public class Person {
     private final Date birthDate;
     // Other fields, methods, and constructor omitted
@@ -203,7 +205,7 @@ public class Person {
 }
 ```
 to this:
-```
+```java
 class Person {
     private final Date birthDate;
     // Other fields, methods, and constructor omitted
@@ -238,7 +240,7 @@ Common sources of memory leaks:
  - Listeners and other callbacks -> Use `WeakHashMap` to store references by storing the keys, in order to be able to deregister the callbacks correctly.
 
 This Stack manages it's own memory, and it contains memory leaks:
-```
+```java
 // Can you spot the "memory leak"?
 public class Stack {
     private Object[] elements;
@@ -271,7 +273,7 @@ public class Stack {
 The memory leak occurs when the stack grows or shrinks, the objects popped from the stack will not be garbage collected. The stack mantains an *obsolete reference* to those objects.
 
 The fix for this problem would be this, even though it is nor desirable:
-```
+```java
 public Object pop() {
     if (size == 0)
         throw new EmptyStackException();
@@ -298,7 +300,7 @@ The use of finalizers can affect the performance of the Garbage Collector and th
 Instead, one can provide an *explicit termination method* required to be called when a client instance is not needed anymore. Examples of this are the `close` methods on InputStream, OutputStream and java.sql.Connection and the `cancel` method on a java.util.Timer.
 
 Using a try finally block can guarantee the execution of the termination explicit method:
-```
+```java
 // try-finally block guarantees execution of termination method
 Foo foo = new Foo(...); 
 try {
@@ -313,7 +315,7 @@ Some legitimate uses of finalizers are:
  - Objects with *native peers*(object to which a normal object delegates native methods)
 
 If a class has a finalizer and a subclass overrides the finalize method, that method should call the method from the super class:
-```
+```java
 // Manual finalizer chaining
 @Override protected void finalize() throws Throwable {
     try {
@@ -325,7 +327,7 @@ If a class has a finalizer and a subclass overrides the finalize method, that me
 ``` 
 
 One way to avoid careless client implementations is to use a *Finalizer Guardian*, but it comes at the expense of creating a new object:
-```
+```java
 // Finalizer Guardian idiom
 public class Foo {
     // Sole purpose of this object is to finalize outer Foo object
@@ -398,7 +400,7 @@ The recipe for a correct override is:
  4. Test the method
 
 An interesting optimization is to cache the value of the hashcode method, mainly if the object is expected to be used as a hash key. In case the object is heavy, this is a good practice. For example:
-```
+```java
 // Lazily initialized, cached hashCode
 private volatile int hashCode;  // (See Item 71)
 
@@ -435,7 +437,7 @@ If you override the clone method in a nonfinal class, you should return an objec
 In practice, a class that implements Cloneable is expected to provide a properly functioning public clone method.
 
 A possible implementation is to implemente the `Clonable` interface and in turn call the `Object.clone` method like this:
-```
+```java
 @Override 
 public PhoneNumber clone() {
     try {
@@ -448,7 +450,7 @@ public PhoneNumber clone() {
 The idea is to never make the client do anything the library can do for the client, this is followed by casting the `super.clone` result to avoid having the client to cast it itself.
 
 In case a class contains inner structures, it is necessary for the clone object to avoid harming the original object contents and avoid pointer relationships with the original object. For example:
-```
+```java
 @Override 
 public Stack clone() {
     try {
@@ -583,7 +585,7 @@ When a class implements an interface, the interface serves as the *type* that ca
 *Constant Interfaces* are interfaces that don't follow the previous, they only contain constants, no methods. **This is a poor use of interfaces.** Interfaces should be used to define types, not constants.
 
 If constants need to be exported, a utility class can be used such as this:
-```
+```java
 // Constant utility class
 package com.effectivejava.science;
 
@@ -605,7 +607,7 @@ import static com.effectivejava.science.PhysicalConstants.*;
 [(Back)](#index)
 
 *Tagged classes* are classes that containt a *tag* indicating the flavour of the instance, they are **verbose, error-prone and inefficient**, such as this:
-```
+```java
 // Tagged class - vastly inferior to a class hierarchy!
 class Figure {
     enum Shape { RECTANGLE, CIRCLE };
@@ -646,7 +648,7 @@ class Figure {
 ```
 
 This can be replaced with class hierarchy:
-```
+```java
 // Class hierarchy replacement for a tagged class
 abstract class Figure {
     abstract double area();
@@ -679,7 +681,7 @@ class Rectangle extends Figure {
 [(Back)](#index)
 
 *Function Objects* are objects that have methods that performs an operation on some given other objects, for example:
-```
+```java
 // A reference to this StringLengthComparator is a Function Object to the compare method
 class StringLengthComparator implements Comparator<String> {
     public int compare(String s1, String s2) {
@@ -700,3 +702,30 @@ A *static member class* is a class defined inside an enclosing class, has the *s
 A *nonstatic member class* is very similar to a *static member class*, with the only difference that each instance of the nonstatic member is associated to an instance of the enclosing class.
 
 If you declare a member class that does not require access to the enclosing instance, make it *static*.
+
+# Chapter 5 - Generics
+[(Back)](#index)
+
+## Item 23 - Do not use raw types in new code
+[(Back)](#index)
+
+*Raw Type* is the type that uses generics, but without the generics part, for example, the raw type of `List<E>` is `List`.
+
+If you declare the variable/parameter like this:
+```java
+// Now a raw collection type - don't do this!
+/* My stamp collection. Contains only Stamp instances. */
+private final Collection stamps = ... ;
+```
+
+You lose all the safety that generics bring, the correct way would be:
+```java
+// Parameterized collection type - typesafe 
+private final Collection<Stamp> stamps = ... ;
+```
+
+Raw types are allowed only for backwards compatibility with legacy Java code.
+
+The difference between `List` and `List<Object>` is that the first one loses the type safety, while the second one is safe.
+
+The difference between `List` and `List<?>` is that the first one is not safe while the first one is.
