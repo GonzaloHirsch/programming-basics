@@ -5,4 +5,4 @@ relative_links:
   collections: true
 include:
   - /Java/Effective-Java.md
-theme: jekyll-theme-slate
+theme: jekyll-theme-minimal
