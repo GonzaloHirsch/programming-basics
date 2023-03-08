@@ -9,6 +9,7 @@ Slowly it will fill up with interesting information and tutorials, for now the o
 Here are the available topics:
  - [Summary of the Effective Java Book (In Progress)](Java/Effective-Java.md)
  - [Guide to start programming in Go (Unfinished)](Go/Go-Guide.md)
+ - [Guide to GraphQL (Unfinished)](GraphQL/GraphQL-Guide.md)
 
 ### Support or Contact
 
